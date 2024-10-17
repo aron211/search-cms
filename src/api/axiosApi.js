@@ -2,7 +2,8 @@ import axios from 'axios'
 import i18n from '@/i18n'
 
 // export const API_URL_BACKEND = 'https://stocksyncapiwebservice.onrender.com'
-export const API_URL_BACKEND = 'http://localhost:3001'
+export const API_URL_BACKEND = 'https://search-api-5qxm.onrender.com'
+// export const API_URL_BACKEND = 'http://localhost:3001'
 
 export const apiHttp = async (
   method,

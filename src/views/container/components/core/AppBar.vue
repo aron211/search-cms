@@ -145,6 +145,7 @@ export default {
     }),
     cerrarSesion() {
       // console.log('cerrar sessio')
+      sessionStorage.clear();
       localStorage.clear();
       this.$router.push("/");
     },

@@ -25,14 +25,14 @@
         style="max-width: 250px"
         @input="debounceSearch"
         @keyup.enter="searchInventory"
-
       />
 
       <v-divider class="mt-3" />
       <v-data-table
         :headers="headers"
-        :items="items"
-        :items-per-page="10" 
+        :items="currentItems"
+     
+        :items-per-page="-1"
         :sort-by="['name']"
         :sort-desc="[false, true]"
         class="elevation-1 tableDesktop"
@@ -42,6 +42,15 @@
           {{ formatNumber(item.cant) }}
         </template>
       </v-data-table>
+
+      <!-- Controles de paginado -->
+      <v-pagination
+        v-model="currentPage"
+        :length="totalPages"
+        :total-visible="7"
+        class="mt-4"
+        @input="handlePageChange"
+      ></v-pagination>
     </base-material-card>
   </v-container>
 </template>
@@ -54,7 +63,7 @@ import _ from "lodash"; // Asegúrate de tener lodash instalado
 export default {
   name: "DashboardDataTables",
   data: () => ({
-    loading: false, // Indicador de carga
+    loading: false,
     snackbar: false,
     message: "",
     id: null,
@@ -68,8 +77,20 @@ export default {
     ],
     items: [],
     search: "",
-    lastUpdated: ""
+    lastUpdated: "",
+    currentPage: 1,
+    itemsPerPage: 10,
   }),
+
+  computed: {
+    totalPages() {
+      return Math.ceil(this.items.length / this.itemsPerPage);
+    },
+    currentItems() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.items.slice(start, start + this.itemsPerPage);
+    }
+  },
 
   mounted() {
     this.fetchData();
@@ -85,18 +106,15 @@ export default {
   },
 
   methods: {
-    // Formato de números
     formatNumber(value) {
       if (!value) return "0";
       return new Intl.NumberFormat("de-DE").format(value);
     },
 
-    // Debounce para búsqueda
     debounceSearch: _.debounce(function() {
       this.searchInventory();
-    }, 4000), // 300 ms de retardo
+    }, 4000),
 
-    // Cargar datos de inventario con caché
     async fetchData() {
       this.loading = true;
       const cachedData = sessionStorage.getItem("inventoryData");
@@ -131,18 +149,22 @@ export default {
       }
     },
 
-    // Búsqueda en inventario
     async searchInventory() {
       this.loading = true;
       try {
         const keywords = this.search.trim();
         const result = await searchnameInventory(keywords);
         this.items = result;
+        this.currentPage = 1; // Resetear a la primera página al buscar
       } catch (error) {
         console.error("Error en searchInventory:", error);
       } finally {
         this.loading = false;
       }
+    },
+
+    handlePageChange(page) {
+      this.currentPage = page; // Actualizar la página actual
     }
   }
 };

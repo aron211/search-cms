@@ -10,7 +10,6 @@ async function searchnameInventory(keywords) {
       const response = await apiHttp('GET', '/api/v1/inventory/search', null, {
         params: { keywords: keywords },
       });
-      console.log('Respuesta completa:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error en searchInventory:', error);

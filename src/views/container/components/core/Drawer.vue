@@ -11,7 +11,10 @@
     <v-list-item two-line>
       <v-list-item-content>
         <v-list-item-title class="text-uppercase font-weight-regular display-2">
-          <v-img :src="logo" class="img-Logo" />
+          <!-- <v-img :src="logo" class="img-Logo" /> -->
+                <v-icon large>
+        mdi-magnify
+      </v-icon>
           <!-- <span class="logo-mini">{{ $t("ct") }}</span>
           <span class="logo-normal">{{ $t("tim") }}</span>
           -->

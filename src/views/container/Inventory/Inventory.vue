@@ -24,6 +24,7 @@
         single-line
         style="max-width: 250px"
         @input="debounceSearch"
+        @keyup.enter="searchInventory"
       />
 
       <v-divider class="mt-3" />
@@ -88,11 +89,6 @@ export default {
       return new Intl.NumberFormat("de-DE").format(value);
     },
 
-    // Debounce para búsqueda
-    debounceSearch: _.debounce(function() {
-      this.searchInventory();
-    }, 300), // 300 ms de retardo
-
     // Cargar datos de inventario con caché
     async fetchData() {
       this.loading = true;
@@ -129,18 +125,41 @@ export default {
     },
 
     // Búsqueda en inventario
+    // async searchInventory() {
+    //   this.loading = true;
+    //   try {
+    //     const keywords = this.search.trim();
+    //     const result = await searchnameInventory(keywords);
+    //     this.items = result;
+    //   } catch (error) {
+    //     console.error("Error en searchInventory:", error);
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
+
     async searchInventory() {
-      this.loading = true;
-      try {
-        const keywords = this.search.trim();
-        const result = await searchnameInventory(keywords);
-        this.items = result;
-      } catch (error) {
-        console.error("Error en searchInventory:", error);
-      } finally {
-        this.loading = false;
-      }
+    if (this.search.trim() === "") {
+      this.fetchData();
+      return;
     }
+    this.loading = true;
+    try {
+      const keywords = this.search.trim();
+      const result = await searchnameInventory(keywords);
+      this.items = result;
+    } catch (error) {
+      console.error("Error en searchInventory:", error);
+    } finally {
+      this.loading = false;
+    }
+  },
+
+        // Debounce para búsqueda
+        debounceSearch: _.debounce(function() {
+      this.searchInventory();
+    }, 5000), 
+
   }
 };
 </script>

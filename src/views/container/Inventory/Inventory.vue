@@ -7,14 +7,37 @@
       class="px-5 py-3"
     >
       <template v-slot:after-heading>
-        <div class="display-2 font-weight-light">
+        <!-- <div class="display-2 font-weight-light">
           Inventario
           <h3 style="font-size: 12px;">
             Última actualización:
             {{ lastUpdated ? lastUpdated : "No disponible" }}
           </h3>
-        </div>
+        </div> -->
+        <div class="display-2 font-weight-light">
+    Inventario
+    <h3 style="font-size: 12px;">
+      Última actualización general:
+      {{ lastUpdated ? lastUpdated : "No disponible" }}
+    </h3>
+  </div>
+
+  <v-divider class="my-3" />
+
+  <div class="branch-updates">
+    <h4 style="font-size: 14px;">Última actualización por sucursal:</h4>
+    <ul>
+      <li>LA19: {{ lastUpdatedBranches.LA19 || "No disponible" }}</li>
+      <li>LA42: {{ lastUpdatedBranches.LA42 || "No disponible" }}</li>
+      <li>TOCUYO: {{ lastUpdatedBranches.TOCUYO || "No disponible" }}</li>
+      <li>SUPLI: {{ lastUpdatedBranches.SUPLI || "No disponible" }}</li>
+      <li>YARACUY: {{ lastUpdatedBranches.YARACUY || "No disponible" }}</li>
+    </ul>
+  </div>
       </template>
+      
+
+      
       <v-text-field
         v-model.trim="search"
         append-icon="mdi-magnify"
@@ -79,6 +102,13 @@ export default {
     lastUpdated: "",
     currentPage: 1,
     itemsPerPage: 10,
+    lastUpdatedBranches: {
+    LA19: null,
+    LA42: null,
+    TOCUYO: null,
+    SUPLI: null,
+    YARACUY: null,
+  },
   }),
 
   computed: {
@@ -115,38 +145,103 @@ export default {
     }, 4000),
 
     async fetchData() {
-      this.loading = true;
-      const cachedData = sessionStorage.getItem("inventoryData");
-      const cachedUpdateTime = sessionStorage.getItem("lastUpdated");
+  this.loading = true;
+  try {
+    const result = await inventoryGetList();
+    if (result.status === 200) {
+      this.items = result.data;
+      console.log("Datos del inventario recibidos:", this.items);  // Ver todos los datos recibidos
 
-      if (cachedData && cachedUpdateTime) {
-        this.items = JSON.parse(cachedData);
-        this.lastUpdated = cachedUpdateTime;
-        this.loading = false;
-      } else {
-        try {
-          const result = await inventoryGetList();
-          if (result.status === 200) {
-            this.items = result.data;
-            if (this.items.length > 0) {
-              const mostRecentItem = this.items.reduce((prev, current) =>
-                new Date(prev.updatedAt) > new Date(current.updatedAt) ? prev : current
-              );
-              const options = { timeZone: "America/Caracas", hour12: false };
-              this.lastUpdated = new Date(mostRecentItem.updatedAt).toLocaleString("es-VE", options);
-              sessionStorage.setItem("inventoryData", JSON.stringify(this.items));
-              sessionStorage.setItem("lastUpdated", this.lastUpdated);
-            }
-          } else {
-            this.message = result.message.text;
-          }
-        } catch (error) {
-          console.error("Error fetching inventory:", error);
-        } finally {
-          this.loading = false;
+      // Mapear los nombres de las sucursales correctos con los nombres simplificados
+      const branchMap = {
+        "RUBEN LA 19": "LA19",
+        "RUBEN LA 42": "LA42",
+        "EL TOCUYO": "TOCUYO",
+        "SUPLI EL ROSARIO": "SUPLI",
+        "YARACUY": "YARACUY"
+      };
+      
+      Object.keys(branchMap).forEach(branch => {
+        console.log("Procesando sucursal:", branch);  // Ver qué sucursal estamos procesando
+
+        const itemsForBranch = this.items.filter(item => {
+          const normalizedSucursal = item.sucursal.trim().toLowerCase();
+          const normalizedBranch = branch.trim().toLowerCase();
+          return normalizedSucursal === normalizedBranch;
+        });
+
+        if (itemsForBranch.length > 0) {
+          console.log(`Items encontrados para ${branch}:`, itemsForBranch);
+          const mostRecent = itemsForBranch.reduce((prev, current) =>
+            new Date(prev.updatedAt) > new Date(current.updatedAt) ? prev : current
+          );
+          // Asignar la última actualización por sucursal
+          const branchKey = branchMap[branch];  // Usar el nombre simplificado
+          this.lastUpdatedBranches[branchKey] = new Date(mostRecent.updatedAt).toLocaleString("es-VE", { timeZone: "America/Caracas", hour12: false });
+          console.log(`Última actualización para ${branch}:`, this.lastUpdatedBranches[branchKey]);
+        } else {
+          // Si no hay items para la sucursal, mostrar "No disponible"
+          const branchKey = branchMap[branch];  // Usar el nombre simplificado
+          this.lastUpdatedBranches[branchKey] = "No disponible";
+          console.log(`No se encontraron items para ${branch}`);
         }
+      });
+
+      // Obtener la última actualización general
+      if (this.items.length > 0) {
+        const mostRecentItem = this.items.reduce((prev, current) =>
+          new Date(prev.updatedAt) > new Date(current.updatedAt) ? prev : current
+        );
+        this.lastUpdated = new Date(mostRecentItem.updatedAt).toLocaleString("es-VE", { timeZone: "America/Caracas", hour12: false });
+        console.log("Última actualización general:", this.lastUpdated);
+      } else {
+        this.lastUpdated = "No disponible";
+        console.log("No hay items en el inventario.");
       }
-    },
+
+      this.loading = false;
+    }
+  } catch (error) {
+    console.error("Error fetching inventory:", error);
+    this.loading = false;
+  }
+}
+
+,
+
+    // async fetchData() {
+    //   this.loading = true;
+    //   const cachedData = sessionStorage.getItem("inventoryData");
+    //   const cachedUpdateTime = sessionStorage.getItem("lastUpdated");
+
+    //   if (cachedData && cachedUpdateTime) {
+    //     this.items = JSON.parse(cachedData);
+    //     this.lastUpdated = cachedUpdateTime;
+    //     this.loading = false;
+    //   } else {
+    //     try {
+    //       const result = await inventoryGetList();
+    //       if (result.status === 200) {
+    //         this.items = result.data;
+    //         if (this.items.length > 0) {
+    //           const mostRecentItem = this.items.reduce((prev, current) =>
+    //             new Date(prev.updatedAt) > new Date(current.updatedAt) ? prev : current
+    //           );
+    //           const options = { timeZone: "America/Caracas", hour12: false };
+    //           this.lastUpdated = new Date(mostRecentItem.updatedAt).toLocaleString("es-VE", options);
+    //           sessionStorage.setItem("inventoryData", JSON.stringify(this.items));
+    //           sessionStorage.setItem("lastUpdated", this.lastUpdated);
+    //         }
+    //       } else {
+    //         this.message = result.message.text;
+    //       }
+    //     } catch (error) {
+    //       console.error("Error fetching inventory:", error);
+    //     } finally {
+    //       this.loading = false;
+    //     }
+    //   }
+    // },
 
     async searchInventory() {
       this.loading = true;

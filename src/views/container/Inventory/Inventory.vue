@@ -23,7 +23,6 @@
         hide-details
         single-line
         style="max-width: 250px"
-        @input="debounceSearch"
         @keyup.enter="searchInventory"
       />
 
@@ -155,7 +154,7 @@ export default {
         const keywords = this.search.trim();
         const result = await searchnameInventory(keywords);
         this.items = result;
-        this.currentPage = 1; // Resetear a la primera página al buscar
+        this.currentPage = 1;
       } catch (error) {
         console.error("Error en searchInventory:", error);
       } finally {
@@ -164,12 +163,8 @@ export default {
     },
 
     handlePageChange(page) {
-      this.currentPage = page; // Actualizar la página actual
+      this.currentPage = page;
     }
   }
 };
 </script>
-
-<style scoped>
-/* Estilos específicos para pantallas móviles */
-</style>

@@ -150,7 +150,6 @@ export default {
     const result = await inventoryGetList();
     if (result.status === 200) {
       this.items = result.data;
-      console.log("Datos del inventario recibidos:", this.items);  // Ver todos los datos recibidos
 
       // Mapear los nombres de las sucursales correctos con los nombres simplificados
       const branchMap = {
@@ -162,7 +161,6 @@ export default {
       };
       
       Object.keys(branchMap).forEach(branch => {
-        console.log("Procesando sucursal:", branch);  // Ver qué sucursal estamos procesando
 
         const itemsForBranch = this.items.filter(item => {
           const normalizedSucursal = item.sucursal.trim().toLowerCase();
@@ -171,19 +169,16 @@ export default {
         });
 
         if (itemsForBranch.length > 0) {
-          console.log(`Items encontrados para ${branch}:`, itemsForBranch);
           const mostRecent = itemsForBranch.reduce((prev, current) =>
             new Date(prev.updatedAt) > new Date(current.updatedAt) ? prev : current
           );
           // Asignar la última actualización por sucursal
-          const branchKey = branchMap[branch];  // Usar el nombre simplificado
+          const branchKey = branchMap[branch]; 
           this.lastUpdatedBranches[branchKey] = new Date(mostRecent.updatedAt).toLocaleString("es-VE", { timeZone: "America/Caracas", hour12: false });
-          console.log(`Última actualización para ${branch}:`, this.lastUpdatedBranches[branchKey]);
         } else {
           // Si no hay items para la sucursal, mostrar "No disponible"
           const branchKey = branchMap[branch];  // Usar el nombre simplificado
           this.lastUpdatedBranches[branchKey] = "No disponible";
-          console.log(`No se encontraron items para ${branch}`);
         }
       });
 
@@ -193,16 +188,13 @@ export default {
           new Date(prev.updatedAt) > new Date(current.updatedAt) ? prev : current
         );
         this.lastUpdated = new Date(mostRecentItem.updatedAt).toLocaleString("es-VE", { timeZone: "America/Caracas", hour12: false });
-        console.log("Última actualización general:", this.lastUpdated);
       } else {
         this.lastUpdated = "No disponible";
-        console.log("No hay items en el inventario.");
       }
 
       this.loading = false;
     }
   } catch (error) {
-    console.error("Error fetching inventory:", error);
     this.loading = false;
   }
 }

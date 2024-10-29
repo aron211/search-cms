@@ -15,7 +15,7 @@ function AuthorizationFunction(to, from, next) {
 
   // Definir las rutas permitidas para cada rol
   const rolePermissions = {
-    admin: ['Dashboard', 'Client', 'ClientsForm', 'Users', 'UsersFrom', 'Inventory', 'InventoryForm', 'Orders', 'OrdersForm', 'Vendors', 'VendorsForm'],
+    admin: ['Dashboard', 'Client', 'ClientsForm', 'Users', 'UsersFrom', 'Inventory', 'InventoryForm', 'Orders', 'OrdersForm', 'Vendors', 'VendorsForm', 'ReportsDiary', 'SummarySale'],
     tecnico: ['Dashboard', 'MyClient', 'MyClientsForm', 'Orders', 'OrdersForm'],
     user: ['Dashboard', 'Orders', 'OrdersForm']
   };
@@ -141,7 +141,19 @@ export default new Router({
           path: "vendors/form",
           beforeEnter: AuthorizationFunction,
           component: () => import("@/views/container/Vendors/VendorsForm")
-        }
+        },
+                {
+          name: "ReportsDiary",
+          path: "reportDiary/reportdiary",
+           beforeEnter: AuthorizationFunction,
+          component: () => import("@/views/container/Reports/ReportsDiary")
+        },
+        {
+          name: "SummarySale",
+          path: "summarysales/summarysales",
+           beforeEnter: AuthorizationFunction,
+          component: () => import("@/views/container/Reports/SummarySale")
+        },
       ]
     }
   ]

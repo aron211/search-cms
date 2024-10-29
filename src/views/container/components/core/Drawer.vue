@@ -87,7 +87,7 @@ export default {
       },
     },
     computedItems() {
-      return this.items.map(this.mapItem)
+      return this.items ? this.items.map(this.mapItem) : [];
     },
     profile() {
       return {
@@ -143,6 +143,21 @@ export default {
           icon: 'mdi-plus-network',
           title: 'Inventario',
           to: '/home/inventory/inventory',
+        },
+        {
+          group: '/home',
+          icon: 'mdi-plus-network',
+          title: 'Reportes',
+          children: [
+            {
+            title: "Cierres diarios",
+            to: 'reportDiary/reportdiary',
+          },
+          {
+            title: "Resumen ventas con costos",
+            to: 'summarysales/summarysales',
+          },
+          ]
         },
         
       ]
